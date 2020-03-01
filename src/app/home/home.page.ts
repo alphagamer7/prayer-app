@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Plugins } from '@capacitor/core';
+import { HomeService } from './home.service';
+
 const { LocalNotifications } = Plugins;
 
 @Component({
@@ -8,22 +10,24 @@ const { LocalNotifications } = Plugins;
   styleUrls: ['./home.page.scss']
 })
 export class HomePage implements OnInit {
-  constructor() {}
+  constructor(private homeService: HomeService) {}
+  prayerTimes = { fajr: '', dhuhr: '', asr: '', maghrib: '', isha: '' };
 
   ngOnInit() {
-    LocalNotifications.schedule({
-      notifications: [
-        {
-          title: 'Title',
-          body: 'test',
-          id: 1,
-          schedule: { at: new Date(Date.now() + 1000 * 5) },
-          sound: null,
-          attachments: null,
-          actionTypeId: '',
-          extra: null
-        }
-      ]
-    });
+    // LocalNotifications.schedule({
+    //   notifications: [
+    //     {
+    //       id: this.idCount++,
+    //       title: 'Test prayer app',
+    //       body: 'test body',
+    //       schedule: { at: new Date(Date.now() + 1000 * 5) }
+    //     }
+    //   ]
+    // });
+    this.setNotifications();
+  }
+
+  setNotifications() {
+    this.homeService.getPrayerTimes();
   }
 }
