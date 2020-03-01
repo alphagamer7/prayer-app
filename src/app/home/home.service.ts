@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Plugins } from '@capacitor/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from 'src/environments/environment';
+import * as moment from 'moment';
 const { LocalNotifications } = Plugins;
 
-import * as moment from 'moment';
+import { environment } from 'src/environments/environment';
 import { SharedConstants } from '../shared/shared.constants';
 
 @Injectable()
@@ -21,17 +21,6 @@ export class HomeService {
         (response: any) => {
           console.log(response);
           this.setScheduling(response.data);
-
-          //   LocalNotifications.schedule({
-          //     notifications: [
-          //       {
-          //         id: this.idCount++,
-          //         title: 'Test prayer app',
-          //         body: 'test body',
-          //         schedule: { at: new Date(Date.now() + 1000 * 5) }
-          //       }
-          //     ]
-          //   });
         },
         err => {
           console.error(err);
@@ -45,26 +34,38 @@ export class HomeService {
   }
 
   setScheduling(data: any) {
-    let timings = SharedConstants.prayerTimings;
     data.map(item => {
-      const scheduledDate = moment(item.date.readable);
-      if (!moment(scheduledDate).isSameOrAfter(moment.now())) return;
-      SharedConstants.prayerTimings.forEach(element => {
-        LocalNotifications.schedule({
-          notifications: [
-            {
-              id: this.idCount++,
-              title: 'Prayer app',
-              body: `Azan for ${element}`,
-              schedule: {
-                at: moment(
-                  `${item.date.readable} ${item.timings[element]}`
-                ).toDate()
+      const scheduledDate = moment(item.date.readable).toDate();
+      // TODO: check for time in between
+      if (
+        !moment(moment().format('LL')).isSameOrBefore(moment(scheduledDate))
+      ) {
+        console.log('isSameOrBefore');
+        return;
+      } else {
+        SharedConstants.prayerTimings.forEach(element => {
+          console.log(
+            'schedulinsg',
+            moment(`${item.date.readable} ${item.timings[element]}`).toDate(),
+            'timing',
+            element
+          );
+          LocalNotifications.schedule({
+            notifications: [
+              {
+                id: this.idCount++,
+                title: 'Prayer app',
+                body: `Azan for ${element}`,
+                schedule: {
+                  at: moment(
+                    `${item.date.readable} ${item.timings[element]}`
+                  ).toDate()
+                }
               }
-            }
-          ]
+            ]
+          });
         });
-      });
+      }
     });
   }
 }
